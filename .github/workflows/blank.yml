@@ -1,4 +1,4 @@
-name: test
+name: Generate and deploy north-america tiles
 
 on:
   push: ~
@@ -16,18 +16,18 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 'hiddewie/OpenRailwayMap-vector'
+          ref: 'deploy-split'
 
-      # TODO remove 0
       - id: bboxes
         run: |
           {
             echo -n 'matrix='
-            jq -c '{ bbox: [.[0].bboxes] | flatten }' tiles/deploy-bboxes.json
+            jq -c '{ bbox: [.["north-america"].[].bboxes] | flatten }' tiles/deploy-bboxes.json
           } >> $GITHUB_OUTPUT
 
           {
             echo -n 'bboxes='
-            jq -r '[.[0].bboxes] | flatten | .[]' tiles/deploy-bboxes.json | tr '\n' ' '
+            jq -r '[.["north-america"].[].bboxes] | flatten | .[]' tiles/deploy-bboxes.json | tr '\n' ' '
           } >> $GITHUB_OUTPUT
 
   generate-tiles:
@@ -45,6 +45,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 'hiddewie/OpenRailwayMap-vector'
+          ref: 'deploy-split'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -100,6 +101,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 'hiddewie/OpenRailwayMap-vector'
+          ref: 'deploy-split'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -138,4 +140,4 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
-          flyctl deploy --app openrailwaymap-tiles-alaska --config martin-static.fly.toml --local-only
+          flyctl deploy --app openrailwaymap-tiles-north-america --config martin-static.fly.toml --local-only
